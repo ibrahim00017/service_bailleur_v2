@@ -8,7 +8,11 @@
     <name>service_bailleur Webapp Deploy</name>
     <url>http://maven.apache.org</url>
     <dependencies>
-
+        <dependency>
+            <groupId>com.bootcamp</groupId>
+            <artifactId>bootcampCRUD</artifactId>
+            <version>1.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.testng</groupId>
@@ -112,20 +116,23 @@
     </dependencies>
 
     <build>
-        <finalName>service_bailleur</finalName>
+        <finalName>sb</finalName>
         <plugins>
+            <!--<plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <url>http://localhost:8080/manager/text</url>
+                    <server>TomcatServer</server>
+                    <path>/servicebailleur</path>
+                </configuration>
+            </plugin>-->
             <plugin>
                 <!--<artifactId>maven-compiler-plugin</artifactId>-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
-             <!--   <executions>
-                    <execution>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                </executions>-->
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -140,9 +147,9 @@
                     <!-- http://www.eclipse.org/jetty/documentation/current/jetty-maven-plugin.html -->
                     <scanIntervalSeconds>3</scanIntervalSeconds>
                     <!--By Default, jetty start on port 8080-->
-                    <httpConnector>
-                        <port>9090</port>
-                    </httpConnector>
+                    <webApp>
+                        <contextPath>/sb</contextPath>
+                    </webApp>
 
                 </configuration>
             </plugin>
@@ -158,22 +165,17 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
-                <configuration>
-                    <mainClass>com.bootcamp.MyServer</mainClass>
-                    <arguments>
-                        <argument>argument1</argument>
-                    </arguments>
-                </configuration>
+
             </plugin>
         </plugins>
     </build>
-   <repositories>
+ <!--  <repositories>
         <repository>
             <id>unknown-jars-temp-repo</id>
             <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
             <url>file:${project.basedir}/lib</url>
         </repository>
-    </repositories> 
+    </repositories> -->
     <properties>
         <slf4j-version>1.7.12</slf4j-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

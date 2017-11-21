@@ -1,6 +1,5 @@
 package com.bootcamp.resources;
 
-import java.sql.SQLException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -15,117 +14,74 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.bootcamp.entities.Bailleur;
-import com.bootcamp.repository.BailleurRepository;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import com.bootcamp.service.BailleurFS;
+import com.bootcamp.service.crud.BailleurCRUD;
+import io.swagger.annotations.*;
 
 @Path("/bailleurs")
-@Api(value="bailleurs")
+@Api(value="/bailleurs",description = "Les operations sur le service bailleur")
+@Produces(MediaType.APPLICATION_JSON)
 public class BailleurService {
-	private BailleurRepository bailleurRepository = new BailleurRepository("Tpjpa");
 	@GET
-    @Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value="Get All the Bailleurs",notes="A list of bailleurs can be filter by their country or by the bailleur's name",
-	responseContainer="List")
+			responseContainer="List")
 	public Response getAll(
 			@ApiParam(value="a bailleur name that need to view",required=false) @QueryParam("nom") String nom,
 			@ApiParam(value="Give a country to sort the list of bailleur by the giving country", required=false) @QueryParam("pays") String pays
-			) {
+	) {
 		if(nom==null && pays==null) {
-		try {
-				return Response.status(200).entity(bailleurRepository.findAll()).build();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return Response.status(404).entity("OCNTENT NOT FOUND").build();
-			}
-		
+			return Response.status(200).entity(BailleurFS.readAll()).build();
+
 		}else if(nom!=null && pays==null) {
-			try {
-				return Response.status(Status.ACCEPTED).entity(bailleurRepository.findByName(nom)).build();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return Response.status(Status.BAD_REQUEST).build();
-			}
+
+			return Response.status(Status.ACCEPTED).entity(BailleurFS.findByName(nom)).build();
+
 		}else if(nom==null && pays!=null) {
-			try {
-				return Response.status(Status.ACCEPTED).entity(bailleurRepository.findByPays(pays)).build();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				try {
-					return Response.status(Status.BAD_REQUEST).entity(bailleurRepository.findAll()).build();
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
+			return Response.status(200).entity(BailleurCRUD.readAll(pays)).build();
 		}
-		return Response.status(Status.BAD_REQUEST).entity("votre requete n'est pqs prise en compte").build();
+		return Response.status(Status.BAD_REQUEST).entity(BailleurCRUD.readAll()).build();
 	}
-	
+
 	@GET
 	@Path("/{id}")
-	@ApiOperation(value="Get one single realy bailleur",notes="A bailleur can be get by the specifique id of this bailleur",
-	responseContainer="Bailleur")
+	@ApiOperation(value="Get one single particular bailleur",notes="A bailleur can be get by the specifique id of this bailleur",
+			responseContainer="Bailleur")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Invalid Bailleur ID supplied"),
+			@ApiResponse(code = 404, message = "Bailleur not found") })
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSingle(
-			@ApiParam(value="The bailleur's id you need to view",required=false) @PathParam("id") Long id){
-		try {
-			return Response.status(200).entity(bailleurRepository.findById(id)).build();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return Response.status(Status.NOT_FOUND).build();
-		}
-			
+			@ApiParam(value="The bailleur's id you need to fetch",required=true) @PathParam("id") Long id){
+
+		return Response.status(200).entity(BailleurFS.getById(id)).build();
+
 	}
-	
+
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value="Create a particular Bailleur",notes="A bailleur can be created by involving it's name and his country")
 	public Response create(Bailleur bailleur) {
-		try {
-			bailleurRepository.create(bailleur);
-			return Response.status(Status.CREATED).entity(bailleur).build();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-		
+		if(BailleurFS.create(bailleur))
+			return Response.status(200).entity(bailleur).build();
+		return Response.status(Status.BAD_REQUEST).entity("Please choose another name, this name already in").build();
+
 	}
-	
+
 	@DELETE
 	@ApiOperation(value="Delete a particular bailleur",notes="Delete a bailleur by giving it's id")
-	public Response delete(Long id) {
-		try {
-			Bailleur bailleur = bailleurRepository.findById(id);
-			bailleurRepository.delete(bailleur);
-			return Response.status(Status.GONE).build();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return Response.status(Status.BAD_REQUEST).build();
-		}
+	public Response delete(@QueryParam("id") Long id) {
+		if(BailleurFS.delete(id))
+			return Response.status(Status.FOUND).build();
+		return Response.status(Status.NOT_FOUND).build();
 	}
-	
+
 	@PUT
 	@ApiOperation(value="Update a particular bailleur",notes="To update a bailleur, give to id of the particular bailleur and the other field desired")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	public Response update(Bailleur bailleur) {
-		try {
-			bailleurRepository.update(bailleur);
-			return Response.status(Status.GONE).build();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return Response.status(Status.NOT_FOUND).build();
-		}
-		
+		if(BailleurFS.update(bailleur))
+			return Response.status(Status.OK).entity("The bailleur has been updated").build();
+		return Response.status(Status.BAD_REQUEST).entity("bailleur not Found").build();
 	}
 }

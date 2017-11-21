@@ -23,15 +23,8 @@
 
   <script type="text/javascript">
     $(function () {
-      var url = window.location.search.match(/url=([^&]+)/);
-      if (url && url.length > 1) {
-        url = decodeURIComponent(url[1]);
-      } else {
-        url = window.location.toString();
-        url = url.substring(0, url.lastIndexOf("/docs")) + "/swagger.json";
-      }
-      window.swaggerUi = new SwaggerUi({
-        url: url,
+       window.swaggerUi = new SwaggerUi({
+        url:"http://localhost:8080/sb/rest/swagger.json",
         dom_id: "swagger-ui-container",
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
         onComplete: function(swaggerApi, swaggerUi){
